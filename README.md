@@ -1,6 +1,29 @@
 osmtogeojson
 ============
 
+### Fork :
+ - Adding ids nodes that composes the features (lines & polygons only)
+ - Adding an output object that representating the nodes that composes all "ways" (standard Geojson features + members (ie : ids of ways)
+ - Return : { geojson, ndRefs } 
+  
+example :
+```js
+ndRefs."node/39724080" : 
+{"type":"Feature","id":"node/39724080",
+"members":["way/23228829","way/23228875","way/26287124","way/155610706"],
+"properties":{"type":"node","id":"39724080","tags":{},"relations":[]},
+"geometry":{"type":"Point","coordinates":[3.8733527,43.6082273]}}"
+```
+
+```js
+geojson.feature[1]:
+{"type":"Feature","id":"way/251318932",
+"ndRefs":["945868019","1768490453","1675159751","1675159753","1755114703","1675159755"],
+"properties":{"type":"way","id":251318932,"tags":{"highway":"secondary",...},
+"relations":[],"meta":{"timestamp":"2014-10-29T14:22:47Z","version":"4" ...}},
+"geometry":{"type":"LineString","coordinates":[[3.8751756,43.6052895],[3.875308,43.6052986],[...]]}}"
+```
+
 Converts [OSM](http://openstreetmap.org) [data](http://wiki.openstreetmap.org/wiki/OSM_XML) to [GeoJSON](http://www.geojson.org/). Try the [demo](http://tyrasd.github.io/osmtogeojson/)!
 
 * stable

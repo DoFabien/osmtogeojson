@@ -837,6 +837,7 @@ osmtogeojson = function( data, options ) {
       }
     }
     // process lines and polygons
+    var  nodesPoly = {};
     for (var i=0;i<ways.length;i++) {
       if (!_.isArray(ways[i].nodes)) {
         if (options.verbose) console.warn('Way',ways[i].type+'/'+ways[i].id,'ignored because it has no nodes');
@@ -851,9 +852,36 @@ osmtogeojson = function( data, options ) {
       ways[i].tainted = false;
       ways[i].hidden = false;
       var coords = new Array();
+      var ndRefs = new Array();
       for (j=0;j<ways[i].nodes.length;j++) {
-        if (typeof ways[i].nodes[j] == "object")
+        if (typeof ways[i].nodes[j] == "object"){
+          var id = 'node/' + ways[i].nodes[j].id;
+          if (!nodesPoly[id]){
+            nodesPoly[id] = {
+              "type": "Feature",
+              "id": 'node/' + ways[i].nodes[j].id,
+              "members" : [ways[i].type+'/'+ways[i].id],
+              "properties": {
+                "type": 'node',
+                "id": ways[i].nodes[j].id,
+                "tags": ways[i].nodes[j].tags || {},
+                "relations": ways[i].nodes[j].relation || []
+                
+              },
+              "geometry": {
+                "type": 'Point',
+                "coordinates": [parseFloat(ways[i].nodes[j].lon), parseFloat(ways[i].nodes[j].lat)]
+              }
+            }
+          }
+          else{ // already exist => push!
+            nodesPoly[id].members.push(ways[i].type+'/'+ways[i].id);
+          }
+
+          ndRefs.push(ways[i].nodes[j].id)
+                
           coords.push([+ways[i].nodes[j].lon, +ways[i].nodes[j].lat]);
+        }
         else {
           if (options.verbose) console.warn('Way',ways[i].type+'/'+ways[i].id,'is tainted by an invalid node');
           ways[i].tainted = true;
@@ -879,6 +907,7 @@ osmtogeojson = function( data, options ) {
       var feature = {
         "type"       : "Feature",
         "id"         : ways[i].type+"/"+ways[i].id,
+        "ndRefs" : ndRefs,
         "properties" : {
           "type" : ways[i].type,
           "id"   : ways[i].id,
@@ -922,7 +951,7 @@ osmtogeojson = function( data, options ) {
     }
     // fix polygon winding
     geojson = rewind(geojson, true /*remove for geojson-rewind >0.1.0*/);
-    return geojson;
+    return {geojson: geojson, ndRefs: nodesPoly};
   }
   function _isPolygonFeature( tags ) {
     var polygonFeatures = options.polygonFeatures;
