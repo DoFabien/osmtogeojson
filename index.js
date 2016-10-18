@@ -813,9 +813,18 @@ osmtogeojson = function( data, options ) {
             mp_coords = mp_coords[0];
           }
           // mp parsed, now construct the geoJSON
+          // find rels members
+          var relMembers = [];
+          for (var i =0; i <rels.length; i++){
+            if (mp_id == rels[i].id){
+              relMembers = rels[i].members;
+              break
+            }
+          }
           var feature = {
             "type"       : "Feature",
             "id"         : tag_object.type+"/"+mp_id,
+            'relMembers' : relMembers,
             "properties" : {
               "type" : tag_object.type,
               "id"   : mp_id,
