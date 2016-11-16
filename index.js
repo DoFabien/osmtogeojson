@@ -36,6 +36,7 @@ osmtogeojson = function( data, options ) {
   options = _.merge(
     {
       verbose: false,
+      ndRefs: false,
       flatProperties: false,
       uninterestingTags: {
         "source": true,
@@ -862,30 +863,35 @@ osmtogeojson = function( data, options ) {
       ways[i].hidden = false;
       var coords = new Array();
       var ndRefs = new Array();
+ 
       for (j=0;j<ways[i].nodes.length;j++) {
         if (typeof ways[i].nodes[j] == "object"){
           var id = 'node/' + ways[i].nodes[j].id;
-          if (!nodesPoly[id]){
-            nodesPoly[id] = {
-              "type": "Feature",
-              "id": 'node/' + ways[i].nodes[j].id,
-              "members" : [ways[i].type+'/'+ways[i].id],
-              "properties": {
-                "type": 'node',
-                "id": ways[i].nodes[j].id,
-                "tags": ways[i].nodes[j].tags || {},
-                "relations": ways[i].nodes[j].relation || []
-                
-              },
-              "geometry": {
-                "type": 'Point',
-                "coordinates": [parseFloat(ways[i].nodes[j].lon), parseFloat(ways[i].nodes[j].lat)]
+
+               if (options.ndRefs){
+                    if (!nodesPoly[id]){
+                        nodesPoly[id] = {
+                          "type": "Feature",
+                          "id": 'node/' + ways[i].nodes[j].id,
+                          "members" : [ways[i].type+'/'+ways[i].id],
+                          "properties": {
+                            "type": 'node',
+                            "id": ways[i].nodes[j].id,
+                            "tags": ways[i].nodes[j].tags || {},
+                            "relations": ways[i].nodes[j].relation || []
+                            
+                          },
+                          "geometry": {
+                            "type": 'Point',
+                            "coordinates": [parseFloat(ways[i].nodes[j].lon), parseFloat(ways[i].nodes[j].lat)]
+                          }
+                        }
+          }
+                else{ // already exist => push!
+                  nodesPoly[id].members.push(ways[i].type+'/'+ways[i].id);
+                }
               }
-            }
-          }
-          else{ // already exist => push!
-            nodesPoly[id].members.push(ways[i].type+'/'+ways[i].id);
-          }
+  
 
           ndRefs.push(ways[i].nodes[j].id)
                 
